@@ -29,8 +29,9 @@ pipeline {
         stage('Run Logstash') {
            steps {
               script {
+                dir('elk-stack')
                // Verify if logstash.conf exists
-                bat 'docker exec logstash ls /elk-stack/logstash.conf'
+                bat 'docker exec logstash ls elk-stack/logstash.conf'
                 // Run Logstash pipeline
                  bat 'docker exec logstash logstash -f /elk-stack/logstash.conf'
                   // Check Logstash logs for processing output
