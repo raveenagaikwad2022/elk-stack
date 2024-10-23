@@ -35,6 +35,32 @@ pipeline {
                 }
             }
         }
+           stage('Wait for Elasticsearch') {
+    steps {
+        script {
+            sleep(time: 30, unit: 'SECONDS') // Initial wait
+
+            def portOpen = false
+            def retries = 10
+            def waitTime = 5 // seconds
+
+            while (!portOpen && retries > 0) {
+                try {
+                    bat "curl -f http://localhost:9200" // Check if port is open
+                    portOpen = true
+                } catch (Exception e) {
+                    echo "Port not open yet. Retrying..."
+                    sleep(time: waitTime, unit: 'SECONDS')
+                    retries--
+                }
+            }
+
+            if (!portOpen) {
+                error "Elasticsearch did not start in time!"
+            }
+        }
+    }
+}
 
         stage('Run Logstash') {
             steps {
@@ -46,7 +72,7 @@ pipeline {
                       bat 'docker-compose up -d elasticsearch'
                     
                     // Optional: wait and check Logstash health
-                    sleep(time: 180, unit: 'SECONDS')  // Adjust this as needed
+                    sleep(time: 120, unit: 'SECONDS')  // Adjust this as needed
                     bat 'docker-compose ps' // Check the status of the containers
                 }
             }
