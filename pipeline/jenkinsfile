@@ -29,7 +29,7 @@ pipeline {
                         // Start up the containers in detached mode
                         bat 'docker-compose up -d'
                         //check service running
-                        bat 'docker logs kibana'
+                        sh 'docker logs kibana'
 
                     }
                 }
