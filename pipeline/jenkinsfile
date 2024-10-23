@@ -34,19 +34,17 @@ pipeline {
         }
 
         stage('Run Logstash') {
-           steps {
-              script {
-                dir('elk-stack'){
-               // Verify if logstash.conf exists
-                sh 'docker exec logstash ls elk-stack/logstash.conf'
-                // Run Logstash pipeline
-                 sh 'docker exec logstash logstash -f /elk-stack/logstash.conf'
-                  // Check Logstash logs for processing output
-                 sh 'docker logs logstash'
-                 }
+            steps {
+                script {
+                    // Start Logstash without nohup
+                    bat 'docker-compose up -d logstash'
+                    
+                    // Optional: wait and check Logstash health
+                    sleep(time: 60, unit: 'SECONDS')  // Adjust this as needed
+                    bat 'docker-compose ps' // Check the status of the containers
                 }
             }
-         }
+        }
 
 
         // stage('Verify Logs') {
