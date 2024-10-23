@@ -22,7 +22,19 @@ pipeline {
             steps {
                 // Run Logstash pipeline to process the robot logs
                 script {
-                    bat 'docker exec logstash logstash -f /elk-stack/logstash.conf'
+                    stage('Run Logstash') {
+    steps {
+        script {
+            // Verify if logstash.conf exists
+            bat 'docker exec logstash ls /elk-stack'
+            // Run Logstash pipeline
+            bat 'docker exec logstash logstash -f /elk-stack/logstash.conf'
+            // Check Logstash logs for processing output
+            bat 'docker logs logstash'
+        }
+    }
+}
+
                 }
             }
         }
