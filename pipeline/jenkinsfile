@@ -41,9 +41,12 @@ pipeline {
                 script {
                     // Start Logstash without nohup
                     bat 'docker-compose up -d logstash'
+                    bat 'docker-compose up -d kibana'
+                     bat 'docker-compose up -d grafana'
+                      bat 'docker-compose up -d elasticsearch'
                     
                     // Optional: wait and check Logstash health
-                    sleep(time: 60, unit: 'SECONDS')  // Adjust this as needed
+                    sleep(time: 180, unit: 'SECONDS')  // Adjust this as needed
                     bat 'docker-compose ps' // Check the status of the containers
                 }
             }
