@@ -27,7 +27,6 @@ pipeline {
         }
 
         stage('Run Logstash') {
-           {
            steps {
               script {
                // Verify if logstash.conf exists
