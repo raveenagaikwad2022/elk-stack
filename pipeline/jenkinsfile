@@ -2,17 +2,18 @@ pipeline {
     agent any
 
     stages {
-        
+
         stage('Clean Workspace') {
             steps {
                 // Clean the workspace
                 cleanWs()
             }
         }
-        stage('Clone Repository') {
+        stage('Checkout Repository') {
             steps {
                 // Clone the repository
-                bat "git clone https://github.com/raveenagaikwad2022/elk-stack.git"
+                // bat "git clone https://github.com/raveenagaikwad2022/elk-stack.git"
+                checkout scm
             }
         }
 
