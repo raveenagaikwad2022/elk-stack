@@ -36,13 +36,10 @@ pipeline {
                  bat 'docker exec logstash logstash -f /elk-stack/logstash.conf'
                   // Check Logstash logs for processing output
                  bat 'docker logs logstash'
-        }
-    }
-}
-
                 }
             }
-        }
+         }
+
 
         stage('Verify Logs') {
             steps {
