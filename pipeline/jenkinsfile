@@ -5,15 +5,15 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 // Clone the repository
-               sh "git clone ' https://github.com/raveenagaikwad2022/elk-stack.git' "
+                bat "git clone https://github.com/raveenagaikwad2022/elk-stack.git"
             }
         }
-        
+
         stage('Build Containers') {
             steps {
                 // Build Docker containers using docker-compose
                 script {
-                    sh 'docker-compose -f docker-compose.yml up -d'
+                    bat 'docker-compose -f docker-compose.yml up -d'
                 }
             }
         }
@@ -22,7 +22,7 @@ pipeline {
             steps {
                 // Run Logstash pipeline to process the robot logs
                 script {
-                    sh 'docker exec -it logstash logstash -f /elk-stack/logstash.conf'
+                    bat 'docker exec logstash logstash -f /elk-stack/logstash.conf'
                 }
             }
         }
@@ -30,15 +30,15 @@ pipeline {
         stage('Verify Logs') {
             steps {
                 // Validate if logs are being processed
-                sh 'docker logs logstash'
+                bat 'docker logs logstash'
             }
         }
-        
+
         stage('Teardown') {
             steps {
                 // Tear down the containers after the process
                 script {
-                    sh 'docker-compose down'
+                    bat 'docker-compose down'
                 }
             }
         }
@@ -48,7 +48,7 @@ pipeline {
         always {
             // Cleanup and send notifications
             echo 'Process completed. Cleaning up...'
-            sh 'docker-compose down'
+            bat 'docker-compose down'
         }
     }
 }
