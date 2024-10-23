@@ -5,98 +5,98 @@ pipeline {
 
         stage('Clean Workspace') {
             steps {
-                // Clean the workspace
-                cleanWs()
+                cleanWs() // Clean the workspace
             }
         }
+
         stage('Checkout Repository') {
             steps {
-                // Clone the repository
-                // bat "git clone https://github.com/raveenagaikwad2022/elk-stack.git"
-                checkout scm
+                checkout scm // Clone the repository
             }
         }
 
         stage('Build Containers') {
             steps {
-                // Build Docker containers using docker-compose
                 script {
-                     dir('elk-stack') { 
+                    dir('elk-stack') { 
                         // List directory contents
                         bat 'dir'
                         // Bring down any running containers
                         bat 'docker-compose down'
                         // Start up the containers in detached mode
                         bat 'docker-compose up -d'
-                        //check service running
+
+                        // Check if Kibana is running
                         def logs = bat(script: 'docker-compose logs kibana', returnStdout: true).trim()
                         echo logs
                     }
                 }
             }
         }
-           stage('Wait for Elasticsearch') {
-    steps {
-        script {
-            sleep(time: 30, unit: 'SECONDS') // Initial wait
 
-            def portOpen = false
-            def retries = 10
-            def waitTime = 5 // seconds
-
-            while (!portOpen && retries > 0) {
-                try {
-                    bat "curl -f http://localhost:9200" // Check if port is open
-                    portOpen = true
-                } catch (Exception e) {
-                    echo "Port not open yet. Retrying..."
-                    sleep(time: waitTime, unit: 'SECONDS')
-                    retries--
+        stage('Check Ports and Logs') {
+            steps {
+                script {
+                    dir('elk-stack') {
+                        // Check ports for all services
+                        def services = ['elasticsearch', 'kibana', 'logstash', 'grafana']
+                        services.each { service ->
+                            echo "Checking port configuration for ${service}..."
+                            bat "curl -f http://localhost:${getPort(service)}" // Replace getPort with actual port numbers
+                            
+                            // Log the logs for each service
+                            def serviceLogs = bat(script: "docker-compose logs ${service}", returnStdout: true).trim()
+                            echo "Logs for ${service}:\n${serviceLogs}"
+                        }
+                    }
                 }
             }
-
-            if (!portOpen) {
-                error "Elasticsearch did not start in time!"
-            }
         }
-    }
-}
 
         stage('Run Logstash') {
             steps {
                 script {
-                    // Start Logstash without nohup
+                    // Start Logstash
                     bat 'docker-compose up -d logstash'
-                    bat 'docker-compose up -d kibana'
-                     bat 'docker-compose up -d grafana'
-                      bat 'docker-compose up -d elasticsearch'
-                    
+
                     // Optional: wait and check Logstash health
                     sleep(time: 120, unit: 'SECONDS')  // Adjust this as needed
                     bat 'docker-compose ps' // Check the status of the containers
                 }
             }
         }
+          stage('Wait for Elasticsearch') {
+            steps {
+                script {
+                    sleep(time: 30, unit: 'SECONDS') // Initial wait
 
+                    def portOpen = false
+                    def retries = 2
+                    def waitTime = 5 // seconds
 
-        // stage('Verify Logs') {
-        //     steps {
-        //         script{
-        //             dir('elk-stack'){
-        //              // Validate if logs are being processed
-        //             sh 'docker logs logstash'
-        //             }
-        //         }
-               
-        //     }
-        // }
+                    while (!portOpen && retries > 0) {
+                        try {
+                            bat "curl -f http://localhost:9200" // Check if port is open
+                            portOpen = true
+                        } catch (Exception e) {
+                            echo "Port not open yet. Retrying..."
+                            sleep(time: waitTime, unit: 'SECONDS')
+                            retries--
+                        }
+                    }
+
+                    if (!portOpen) {
+                        error "Elasticsearch did not start in time!"
+                    }
+                }
+            }
+        }
 
         stage('Teardown') {
             steps {
-                // Tear down the containers after the process
                 script {
                     dir('elk-stack'){
-                    bat 'docker-compose down'
+                        bat 'docker-compose down' // Tear down the containers after the process
                     }
                 }
             }
@@ -105,9 +105,24 @@ pipeline {
 
     post {
         always {
-            // Cleanup and send notifications
             echo 'Process completed. Cleaning up...'
-            bat 'docker-compose down'
+            bat 'docker-compose down' // Ensure containers are down after completion
         }
+    }
+}
+
+// Function to get the port for each service
+def getPort(service) {
+    switch(service) {
+        case 'elasticsearch':
+            return '9200'
+        case 'kibana':
+            return '5601'
+        case 'logstash':
+            return '5044' // Change if you're using a different port
+        case 'grafana':
+            return '3000'
+        default:
+            return 'unknown'
     }
 }
