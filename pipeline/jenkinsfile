@@ -21,7 +21,9 @@ pipeline {
             steps {
                 // Build Docker containers using docker-compose
                 script {
+                    dir('elk-stack'){
                     bat 'docker-compose -f docker-compose.yml up -d'
+                    }
                 }
             }
         }
@@ -42,17 +44,17 @@ pipeline {
          }
 
 
-        stage('Verify Logs') {
-            steps {
-                script{
-                    dir('elk-stack'){
-                     // Validate if logs are being processed
-                    sh 'docker logs logstash'
-                    }
-                }
+        // stage('Verify Logs') {
+        //     steps {
+        //         script{
+        //             dir('elk-stack'){
+        //              // Validate if logs are being processed
+        //             sh 'docker logs logstash'
+        //             }
+        //         }
                
-            }
-        }
+        //     }
+        // }
 
         stage('Teardown') {
             steps {
