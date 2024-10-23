@@ -29,8 +29,8 @@ pipeline {
                         // Start up the containers in detached mode
                         bat 'docker-compose up -d'
                         //check service running
-                        sh 'docker logs kibana'
-
+                        def logs = bat(script: 'docker-compose logs kibana', returnStdout: true).trim()
+                        echo logs
                     }
                 }
             }
