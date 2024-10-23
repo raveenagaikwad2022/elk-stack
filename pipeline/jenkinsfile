@@ -21,8 +21,13 @@ pipeline {
             steps {
                 // Build Docker containers using docker-compose
                 script {
-                    dir('elk-stack'){
-                    bat 'docker-compose -f docker-compose.yml up -d'
+                     dir('elk-stack') { 
+                        // List directory contents
+                        bat 'dir'
+                        // Bring down any running containers
+                        bat 'docker-compose down'
+                        // Start up the containers in detached mode
+                        bat 'docker-compose up -d'
                     }
                 }
             }
