@@ -43,8 +43,12 @@ pipeline {
 
         stage('Verify Logs') {
             steps {
-                // Validate if logs are being processed
-                bat 'docker logs logstash'
+                script{
+                    dir('elk-stack')
+                     // Validate if logs are being processed
+                    sh 'docker logs logstash'
+                }
+               
             }
         }
 
@@ -52,6 +56,7 @@ pipeline {
             steps {
                 // Tear down the containers after the process
                 script {
+                    dir('elk-stack')
                     bat 'docker-compose down'
                 }
             }
